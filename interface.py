@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from utils.models import *
 from .qobuz_api import Qobuz
 
@@ -21,7 +23,8 @@ class ModuleInterface:
         self.session.auth_token = module_controller.temporary_settings_controller.read('token')
         self.module_controller = module_controller
 
-    def login(self, email, password): # Called automatically by Orpheus
+    # Called automatically by Orpheus
+    def login(self, email, password):
         token = self.session.login(email, password)
         self.session.auth_token = token
         self.module_controller.temporary_settings_controller.set('token', token)
@@ -87,6 +90,7 @@ class ModuleInterface:
 
         return AlbumInfo(
             album_name = album_data['title'],
+            album_year = album_data['release_date_original'][:4],
             artist_name = album_data['artist']['name'],
             artist_id = album_data['artist']['id'],
             tracks = [str(track['id']) for track in album_data['tracks']['items']],
@@ -98,6 +102,7 @@ class ModuleInterface:
 
         return PlaylistInfo(
             playlist_name = playlist_data['name'],
+            playlist_year = datetime.utcfromtimestamp(playlist_data['created_at']).strftime('%Y'),
             playlist_creator_name = playlist_data['owner']['name'],
             playlist_creator_id = playlist_data['owner']['id'],
             tracks = [str(track['id']) for track in playlist_data['tracks']['items']]
@@ -143,21 +148,27 @@ class ModuleInterface:
         for i in results[query_type.name + 's']['items']:
             if query_type is DownloadTypeEnum.artist:
                 artists = None
+                year = None
             elif query_type is DownloadTypeEnum.playlist:
                 artists = [i['owner']['name']]  # TODO: replace to get all artists
+                year = datetime.utcfromtimestamp(i['created_at']).strftime('%Y')
             elif query_type is DownloadTypeEnum.track:
-                artists = [i['performer']['name']] # TODO: replace to get all artists
+                artists = [i['performer']['name']]  # TODO: replace to get all artists
+                # Getting the year from the album?
+                year = i['album']['release_date_original'][:4]
             elif query_type is DownloadTypeEnum.album:
-                artists = [i['artist']['name']] # TODO: replace to get all artists
+                artists = [i['artist']['name']]  # TODO: replace to get all artists
+                year = i['release_date_original'][:4]
             else:
                 raise Exception('Query type is invalid')
 
             item = SearchResult(
                 name = i['name'] if 'name' in i else i['title'],
                 artists = artists,
+                year = year,
                 result_id = str(i['id']),
                 explicit = bool(i['parental_warning']) if 'parental_warning' in i else None,
-                #additional = [f'({i["maximum_sampling_rate"]}kHz/{i["maximum_bit_depth"]}bit)']
+                additional = [f'{i["maximum_sampling_rate"]}/{i["maximum_bit_depth"]}'] if "maximum_sampling_rate" in i else None
             )
 
             items.append(item)

@@ -3,5 +3,4 @@ venv
 .vscode
 .DS_Store
 .idea/
-
 .python-version
