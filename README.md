@@ -21,8 +21,6 @@ A Qobuz module for the OrpheusDL modular archival music program
     - [Global](#global)
     - [Qobuz](#qobuz)
 - [Contact](#contact)
-- [Acknowledgements](#acknowledgements)
-
 
 
 <!-- ABOUT ORPHEUS -->
@@ -72,16 +70,33 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 ```json
 "global": {
     "general": {
-        "album_search_return_only_albums": false,
-        "download_path": "./downloads/",
+        ...
         "download_quality": "lossless"
+    },
+    "formatting": {
+        "album_format": "{album_name}{quality}{explicit}",
+        ...
     }
+    ...
+}
 ```
 
 `download_quality`: Choose one of the following settings:
 * "hifi": FLAC up to 192/24
 * "lossless": FLAC with 44.1/16
 * "high": MP3 320 kbit/s (currently not supported)
+
+`album_format`:
+* `{quality}` will add
+    ```
+     [192kHz 24bit]
+    ```
+  depending on the maximum available album quality
+* `{explicit}` will add
+    ```
+     [E]
+    ```
+  to the album path 
 
 ### Qobuz
 ```json

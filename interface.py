@@ -91,6 +91,8 @@ class ModuleInterface:
         return AlbumInfo(
             album_name = album_data['title'],
             album_year = album_data['release_date_original'][:4],
+            explicit = album_data['parental_warning'],
+            quality = f'{album_data["maximum_sampling_rate"]}kHz {album_data["maximum_bit_depth"]}bit',
             artist_name = album_data['artist']['name'],
             artist_id = album_data['artist']['id'],
             tracks = [str(track['id']) for track in album_data['tracks']['items']],
