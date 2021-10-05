@@ -71,7 +71,7 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 "global": {
     "general": {
         ...
-        "download_quality": "lossless"
+        "download_quality": "hifi"
     },
     "formatting": {
         "album_format": "{album_name}{quality}{explicit}",
@@ -118,7 +118,7 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 <!-- Contact -->
 ## Contact
 
-Yarrm80s (pronounced 'Yeargh mateys!') - [@yarrm80s](https://github.com/yarrm80s)
+Yarrm80s - [@yarrm80s](https://github.com/yarrm80s)
 
 Dniel97 - [@Dniel97](https://github.com/Dniel97)
 
