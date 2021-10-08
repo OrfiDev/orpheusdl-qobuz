@@ -6,11 +6,10 @@ from .qobuz_api import Qobuz
 
 module_information = ModuleInformation(
     service_name = 'Qobuz',
-    module_supported_modes = ModuleModes.download | ModuleModes.credits, 
-    flags = ModuleFlags.standard_login,
+    module_supported_modes = ModuleModes.download | ModuleModes.credits,
     global_settings = {'app_id': '', 'app_secret': ''},
     session_settings = {'username': '', 'password': ''},
-    temporary_settings = ['token'],
+    session_storage_variables = ['token'],
     netlocation_constant = 'qobuz',
     test_url = 'https://open.qobuz.com/track/52151405'
 )
@@ -47,13 +46,13 @@ class ModuleInterface:
 
         tags = Tags(
             album_artist = album_data['artist']['name'],
-            composer = track_data['composer']['name'],
+            composer = track_data['composer']['name'] if 'composer' in track_data else None,
             track_number = track_data['track_number'],
             total_tracks = album_data['tracks_count'],
             disc_number = track_data['media_number'],
             total_discs = album_data['media_count'],
-            isrc = track_data['isrc'] if 'isrc' in track_data else '',
-            upc = track_data['upc'] if 'upc' in track_data else None,
+            isrc = track_data.get('isrc'),
+            upc = track_data.get('upc'),
             copyright = track_data['copyright'],
             genres = [album_data['genre']['name']],
         )
@@ -177,7 +176,7 @@ class ModuleInterface:
                 artists = artists,
                 year = year,
                 result_id = str(i['id']),
-                explicit = bool(i['parental_warning']) if 'parental_warning' in i else None,
+                explicit = bool(i.get('parental_warning')),
                 additional = [f'{i["maximum_sampling_rate"]}kHz/{i["maximum_bit_depth"]}bit'] if "maximum_sampling_rate" in i else None
             )
 
