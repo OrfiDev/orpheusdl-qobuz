@@ -76,18 +76,6 @@ class Qobuz:
             'app_id': self.app_id
         })
 
-    @staticmethod
-    def get_cover_url(thumbnail_url: str, cover_size=4):
-        # 1 = 50x50, 2 = 230x230, 3 = 600x600, 4 = max.
-        cover_dict = {
-            1: '_50.jpg',
-            2: '_230.jpg',
-            3: '_600.jpg',
-            4: '_max.jpg'
-        }
-
-        return thumbnail_url.split('_')[0] + cover_dict[cover_size]
-
     def get_file_url(self, track_id: str, quality_id=27):
         params = {
             'track_id': track_id,
