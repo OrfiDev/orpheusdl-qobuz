@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import datetime
 
 from utils.models import *
@@ -41,7 +42,11 @@ class ModuleInterface:
         }
         quality_tier = quality_parse[quality_tier]
 
-        artists = [track_data['performer']['name']]
+        artists = [
+            unicodedata.normalize('NFKD', track_data['performer']['name']) \
+            .encode('ascii', 'ignore') \
+            .decode('utf-8')
+        ]
 
         # Filter MainArtist from performers
         performers = []
@@ -54,6 +59,7 @@ class ModuleInterface:
                 continue
             performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
         track_data['performers'] = ' - '.join(performers)
+        artists[0] = track_data['performer']['name']
 
         tags = Tags(
             album_artist = album_data['artist']['name'],
