@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import datetime
 
 from utils.models import *
@@ -41,6 +42,26 @@ class ModuleInterface:
         }
         quality_tier = quality_parse[quality_tier]
 
+        artists = [
+            unicodedata.normalize('NFKD', track_data['performer']['name']) \
+            .encode('ascii', 'ignore') \
+            .decode('utf-8')
+        ]
+
+        # Filter MainArtist from performers
+        performers = []
+        for credit in track_data['performers'].split(' - '):
+            contributor_role = credit.split(', ')[1:]
+            contributor_name = credit.split(', ')[0]
+            if 'MainArtist' in contributor_role:
+                if contributor_name not in artists:
+                    artists.append(contributor_name)
+                contributor_role.remove('MainArtist')
+                if contributor_role == []: continue
+            performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
+        track_data['performers'] = ' - '.join(performers)
+        artists[0] = track_data['performer']['name']
+
         tags = Tags(
             album_artist = album_data['artist']['name'],
             composer = track_data['composer']['name'] if 'composer' in track_data else None,
@@ -58,7 +79,7 @@ class ModuleInterface:
             name = track_data['title'],
             album_id = album_data['id'],
             album = album_data['title'],
-            artists = [track_data['performer']['name']],
+            artists = artists,
             artist_id = track_data['performer']['id'],
             bit_depth = 24 if quality_tier == 27 and track_data['hires_streamable'] else 16,
             sample_rate = track_data['maximum_sampling_rate'] if quality_tier == 27 and track_data['hires_streamable'] else 44.1,
@@ -70,7 +91,7 @@ class ModuleInterface:
             credits_extra_kwargs = {'data': {track_id: track_data}},
             download_extra_kwargs = {'track_id': track_id, 'quality_tier': quality_tier}
         )
-    
+
     def get_track_download(self, track_id, quality_tier):
         return TrackDownloadInfo(download_type=DownloadEnum.URL, file_url=self.session.get_file_url(track_id, quality_tier)['url'])
 
