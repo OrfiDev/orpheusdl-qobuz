@@ -56,7 +56,8 @@ class ModuleInterface:
             if 'MainArtist' in contributor_role:
                 if contributor_name not in artists:
                     artists.append(contributor_name)
-                continue
+                contributor_role.remove('MainArtist')
+                if contributor_role == []: continue
             performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
         track_data['performers'] = ' - '.join(performers)
         artists[0] = track_data['performer']['name']
