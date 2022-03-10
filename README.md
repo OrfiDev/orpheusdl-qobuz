@@ -67,17 +67,17 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 
 ### Global
 
-```json
+```json5
 "global": {
     "general": {
-        ...
+        // ...
         "download_quality": "hifi"
     },
     "formatting": {
         "album_format": "{album_name}{quality}{explicit}",
-        ...
+        // ...
     }
-    ...
+    // ...
 }
 ```
 
@@ -87,11 +87,11 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 * "high": MP3 320 kbit/s (currently not supported)
 
 `album_format`:
-* `{quality}` will add
+* `{quality}` will add the format which you can specify under `quality_format` (see below), default:
     ```
      [192kHz 24bit]
     ```
-  depending on the maximum available album quality
+  depending on the maximum available album quality and the chosen `download_quality` setting
 * `{explicit}` will add
     ```
      [E]
@@ -99,10 +99,11 @@ loaded module. You'll find the configuration file here: `config/settings.json`
   to the album path 
 
 ### Qobuz
-```json
+```json5
 "qobuz": {
     "app_id": "",
     "app_secret": "",
+    "quality_format": "{sample_rate}kHz {bit_depth}bit",
     "username": "",
     "password": ""
 }
@@ -110,6 +111,12 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 `app_id`: Enter a valid mobile app id
 
 `app_secret`: Enter a valid mobile app secret
+
+`quality_format`: How the quality is formatted when `{quality}` is present in `album_format`, possible values are 
+`{sample_rate}` and `bit_depth`.
+
+**NOTE: Set the `"quality_format": ""` to remove the quality string even if `{quality}` is present in `album_format`. 
+Square brackets `[]` will always be added before and after the `quality_format` in the album path.**
 
 `username`: Enter your qobuz email address here
 

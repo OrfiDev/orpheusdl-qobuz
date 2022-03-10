@@ -8,7 +8,7 @@ from .qobuz_api import Qobuz
 module_information = ModuleInformation(
     service_name = 'Qobuz',
     module_supported_modes = ModuleModes.download | ModuleModes.credits,
-    global_settings = {'app_id': '', 'app_secret': ''},
+    global_settings = {'app_id': '', 'app_secret': '', 'quality_format': '{sample_rate}kHz {bit_depth}bit'},
     session_settings = {'username': '', 'password': ''},
     session_storage_variables = ['token'],
     netlocation_constant = 'qobuz',
@@ -23,6 +23,17 @@ class ModuleInterface:
         self.session.auth_token = module_controller.temporary_settings_controller.read('token')
         self.module_controller = module_controller
 
+        # 5 = 320 kbps MP3, 6 = 16-bit FLAC, 7 = 24-bit / =< 96kHz FLAC, 27 =< 192 kHz FLAC
+        self.quality_parse = {
+            QualityEnum.LOW: 5,
+            QualityEnum.MEDIUM: 5,
+            QualityEnum.HIGH: 5,
+            QualityEnum.LOSSLESS: 6,
+            QualityEnum.HIFI: 27
+        }
+        self.quality_tier = module_controller.orpheus_options.quality_tier
+        self.quality_format = settings.get('quality_format')
+
     def login(self, email, password):
         token = self.session.login(email, password)
         self.session.auth_token = token
@@ -32,34 +43,28 @@ class ModuleInterface:
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
         album_data = track_data['album']
 
-        # 5 = 320 kbps MP3, 6 = 16-bit FLAC, 7 = 24-bit / =< 96kHz FLAC, 27 =< 192 kHz FLAC
-        quality_parse = {
-            QualityEnum.LOW: 5,
-            QualityEnum.MEDIUM: 5,
-            QualityEnum.HIGH: 5,
-            QualityEnum.LOSSLESS: 6,
-            QualityEnum.HIFI: 27
-        }
-        quality_tier = quality_parse[quality_tier]
+        quality_tier = self.quality_parse[quality_tier]
 
         artists = [
-            unicodedata.normalize('NFKD', track_data['performer']['name']) \
-            .encode('ascii', 'ignore') \
+            unicodedata.normalize('NFKD', track_data['performer']['name'])
+            .encode('ascii', 'ignore')
             .decode('utf-8')
         ]
 
         # Filter MainArtist from performers
-        performers = []
-        for credit in track_data['performers'].split(' - '):
-            contributor_role = credit.split(', ')[1:]
-            contributor_name = credit.split(', ')[0]
-            if 'MainArtist' in contributor_role:
-                if contributor_name not in artists:
-                    artists.append(contributor_name)
-                contributor_role.remove('MainArtist')
-                if contributor_role == []: continue
-            performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
-        track_data['performers'] = ' - '.join(performers)
+        if track_data.get('performers'):
+            performers = []
+            for credit in track_data['performers'].split(' - '):
+                contributor_role = credit.split(', ')[1:]
+                contributor_name = credit.split(', ')[0]
+                if 'MainArtist' in contributor_role:
+                    if contributor_name not in artists:
+                        artists.append(contributor_name)
+                    contributor_role.remove('MainArtist')
+                    if not contributor_role:
+                        continue
+                performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
+            track_data['performers'] = ' - '.join(performers)
         artists[0] = track_data['performer']['name']
 
         tags = Tags(
@@ -106,6 +111,18 @@ class ModuleInterface:
             track['album'] = album_data
             extra_kwargs[track_id] = track
 
+        # get the wanted quality for an actual album quality_format string
+        quality_tier = self.quality_parse[self.quality_tier]
+        # TODO: Ignore sample_rate and bit_depth if album_data['hires'] is False?
+        bit_depth = 24 if quality_tier == 27 and album_data['hires_streamable'] else 16
+        sample_rate = album_data['maximum_sampling_rate'] if quality_tier == 27 and album_data[
+            'hires_streamable'] else 44.1
+
+        quality_tags = {
+            'sample_rate': sample_rate,
+            'bit_depth': bit_depth
+        }
+
         return AlbumInfo(
             name = album_data['title'],
             artist = album_data['artist']['name'],
@@ -113,7 +130,7 @@ class ModuleInterface:
             tracks = tracks,
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = album_data['parental_warning'],
-            quality = f'{album_data["maximum_sampling_rate"]}kHz {album_data["maximum_bit_depth"]}bit',
+            quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
             all_track_cover_jpg_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
@@ -148,7 +165,7 @@ class ModuleInterface:
 
     def get_track_credits(self, track_id, data=None):
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
-        track_contributors = track_data['performers']
+        track_contributors = track_data.get('performers')
 
         # Credits look like: {name}, {type1}, {type2} - {name2}, {type2}
         credits_dict = {}
