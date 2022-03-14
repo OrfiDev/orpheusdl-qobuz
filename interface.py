@@ -80,25 +80,29 @@ class ModuleInterface:
             genres = [album_data['genre']['name']],
         )
 
+        stream_data = self.session.get_file_url(track_id, quality_tier)
+
         return TrackInfo(
             name = track_data['title'],
             album_id = album_data['id'],
             album = album_data['title'],
             artists = artists,
             artist_id = track_data['performer']['id'],
-            bit_depth = 24 if quality_tier == 27 and track_data['hires_streamable'] else 16,
-            sample_rate = track_data['maximum_sampling_rate'] if quality_tier == 27 and track_data['hires_streamable'] else 44.1,
+            bit_depth = stream_data['bit_depth'],
+            bitrate = {5: 320, 6: 1411, 27: None}[quality_tier],
+            sample_rate = stream_data['sampling_rate'],
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if quality_tier == 27 else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if quality_tier in {6, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
-            download_extra_kwargs = {'track_id': track_id, 'quality_tier': quality_tier}
+            download_extra_kwargs = {'url': stream_data['url']},
+            error=f'Track "{track_data["title"]}" is not streamable!' if not track_data['streamable'] else None
         )
 
-    def get_track_download(self, track_id, quality_tier):
-        return TrackDownloadInfo(download_type=DownloadEnum.URL, file_url=self.session.get_file_url(track_id, quality_tier)['url'])
+    def get_track_download(self, url):
+        return TrackDownloadInfo(download_type=DownloadEnum.URL, file_url=url)
 
     def get_album_info(self, album_id):
         album_data = self.session.get_album(album_id)

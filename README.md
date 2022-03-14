@@ -84,7 +84,7 @@ loaded module. You'll find the configuration file here: `config/settings.json`
 `download_quality`: Choose one of the following settings:
 * "hifi": FLAC up to 192/24
 * "lossless": FLAC with 44.1/16
-* "high": MP3 320 kbit/s (currently not supported)
+* "high": MP3 320 kbit/s
 
 `album_format`:
 * `{quality}` will add the format which you can specify under `quality_format` (see below), default:
