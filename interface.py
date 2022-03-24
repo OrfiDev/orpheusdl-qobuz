@@ -46,7 +46,8 @@ class ModuleInterface:
         quality_tier = self.quality_parse[quality_tier]
 
         artists = [
-            unicodedata.normalize('NFKD', track_data['performer']['name'])
+            unicodedata.normalize('NFKD', track_data['performer']['name']
+                if track_data.get('performer') else album_data['artist']['name'])
             .encode('ascii', 'ignore')
             .decode('utf-8')
         ]
@@ -65,7 +66,7 @@ class ModuleInterface:
                         continue
                 performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
             track_data['performers'] = ' - '.join(performers)
-        artists[0] = track_data['performer']['name']
+        # artists[0] = track_data['performer']['name']
 
         tags = Tags(
             album_artist = album_data['artist']['name'],
@@ -81,21 +82,25 @@ class ModuleInterface:
         )
 
         stream_data = self.session.get_file_url(track_id, quality_tier)
+        # uncompressed PCM bitrate calculation, not quite accurate for FLACs due to the up to 60% size improvement
+        bitrate = 320
+        if stream_data['format_id'] in {6, 7, 27}:
+            bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         return TrackInfo(
             name = track_data['title'],
             album_id = album_data['id'],
             album = album_data['title'],
             artists = artists,
-            artist_id = track_data['performer']['id'],
+            artist_id = track_data['performer']['name'] if track_data.get('performer') else album_data['artist']['id'],
             bit_depth = stream_data['bit_depth'],
-            bitrate = {5: 320, 6: 1411, 27: None}[quality_tier],
+            bitrate = bitrate,
             sample_rate = stream_data['sampling_rate'],
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if quality_tier in {6, 27} else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
             download_extra_kwargs = {'url': stream_data['url']},
             error=f'Track "{track_data["title"]}" is not streamable!' if not track_data['streamable'] else None
