@@ -45,9 +45,9 @@ class ModuleInterface:
 
         quality_tier = self.quality_parse[quality_tier]
 
-        mainArtist = track_data['performer'] if track_data.get('performer') else album_data['artist']
+        main_artist = track_data.get('performer', album_data['artist'])
         artists = [
-            unicodedata.normalize('NFKD', mainArtist['name'])
+            unicodedata.normalize('NFKD', main_artist['name'])
             .encode('ascii', 'ignore')
             .decode('utf-8')
         ]
@@ -66,7 +66,7 @@ class ModuleInterface:
                         continue
                 performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
             track_data['performers'] = ' - '.join(performers)
-        artists[0] = mainArtist['name']
+        artists[0] = main_artist['name']
 
         tags = Tags(
             album_artist = album_data['artist']['name'],
@@ -92,7 +92,7 @@ class ModuleInterface:
             album_id = album_data['id'],
             album = album_data['title'],
             artists = artists,
-            artist_id = mainArtist.get('id'),
+            artist_id = main_artist['id'],
             bit_depth = stream_data['bit_depth'],
             bitrate = bitrate,
             sample_rate = stream_data['sampling_rate'],
