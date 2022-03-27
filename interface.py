@@ -87,10 +87,17 @@ class ModuleInterface:
         if stream_data['format_id'] in {6, 7, 27}:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
+        # track and album title fix to include version tag
+        track_name = track_data.get('title')
+        track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
+
+        album_name = album_data.get('title')
+        album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
+
         return TrackInfo(
-            name = track_data['title'],
+            name = track_name,
             album_id = album_data['id'],
-            album = album_data['title'],
+            album = album_name,
             artists = artists,
             artist_id = main_artist['id'],
             bit_depth = stream_data['bit_depth'],
@@ -132,8 +139,12 @@ class ModuleInterface:
             'bit_depth': bit_depth
         }
 
+        # album title fix to include version tag
+        album_name = album_data.get('title')
+        album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
+
         return AlbumInfo(
-            name = album_data['title'],
+            name = album_name,
             artist = album_data['artist']['name'],
             artist_id = album_data['artist']['id'],
             tracks = tracks,
