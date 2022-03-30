@@ -91,7 +91,7 @@ class ModuleInterface:
         track_name = track_data.get('title')[:-1] if track_data.get('title').endswith(' ') else track_data.get('title')
         track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
 
-        album_name = album_data.get('title')
+        album_name = album_data.get('title')[:-1] if album_name.get('title').endswith(' ') else album_data.get('title')
         album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
 
         return TrackInfo(
