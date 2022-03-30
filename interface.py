@@ -88,7 +88,7 @@ class ModuleInterface:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
-        track_name = track_data.get('title')
+        track_name = track_data.get('title')[:-1] if track_data.get('title').endswith(' ') else track_data.get('title')
         track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
 
         album_name = album_data.get('title')
