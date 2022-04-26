@@ -71,7 +71,7 @@ class ModuleInterface:
         tags = Tags(
             album_artist = album_data['artist']['name'],
             composer = track_data['composer']['name'] if 'composer' in track_data else None,
-            release_data = album_data.get('release_date_original'),
+            release_date = album_data.get('release_date_original'),
             track_number = track_data['track_number'],
             total_tracks = album_data['tracks_count'],
             disc_number = track_data['media_number'],
