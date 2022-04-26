@@ -88,10 +88,10 @@ class ModuleInterface:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
-        track_name = track_data.get('title')
+        track_name = track_data.get('title').rstrip()
         track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
 
-        album_name = album_data.get('title')
+        album_name = album_data.get('title').rstrip()
         album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
 
         return TrackInfo(
@@ -140,7 +140,7 @@ class ModuleInterface:
         }
 
         # album title fix to include version tag
-        album_name = album_data.get('title')
+        album_name = album_data.get('title').rstrip()
         album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
 
         return AlbumInfo(
@@ -227,7 +227,7 @@ class ModuleInterface:
                 year = int(i['release_date_original'].split('-')[0])
             else:
                 raise Exception('Query type is invalid')
-            name = i.get('name') if i.get('name') else i.get('title')
+            name = i.get('name', i['title'])
             name += f" ({i.get('version')})" if i.get('version') else ''
             item = SearchResult(
                 name = name,
