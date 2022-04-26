@@ -106,7 +106,7 @@ class ModuleInterface:
             sample_rate = stream_data['sampling_rate'],
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = track_data['parental_warning'],
-            cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
+            cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
             codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
@@ -152,7 +152,7 @@ class ModuleInterface:
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = album_data['parental_warning'],
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
-            cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
+            cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
         )
