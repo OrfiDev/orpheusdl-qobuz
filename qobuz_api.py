@@ -49,8 +49,10 @@ class Qobuz:
 
         r = self._get('user/login', params)
 
-        if 'user_auth_token' in r:
+        if 'user_auth_token' in r and r['user']['credential']['parameters']:
             self.auth_token = r['user_auth_token']
+        elif not r['user']['credential']['parameters']:
+            raise self.exception("Free accounts are not eligible for downloading")
         else:
             raise self.exception('Invalid username/password')
 
