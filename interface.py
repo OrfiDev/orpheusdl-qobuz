@@ -76,7 +76,7 @@ class ModuleInterface:
             disc_number = track_data['media_number'],
             total_discs = album_data['media_count'],
             isrc = track_data.get('isrc'),
-            upc = track_data.get('upc'),
+            upc = album_data.get('upc'),
             copyright = track_data['copyright'],
             genres = [album_data['genre']['name']],
         )
