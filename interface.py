@@ -71,6 +71,7 @@ class ModuleInterface:
         tags = Tags(
             album_artist = album_data['artist']['name'],
             composer = track_data['composer']['name'] if 'composer' in track_data else None,
+            release_date = album_data.get('release_date_original'),
             track_number = track_data['track_number'],
             total_tracks = album_data['tracks_count'],
             disc_number = track_data['media_number'],
@@ -88,10 +89,10 @@ class ModuleInterface:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
-        track_name = track_data.get('title')
+        track_name = track_data.get('title').rstrip()
         track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
 
-        album_name = album_data.get('title')
+        album_name = album_data.get('title').rstrip()
         album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
 
         return TrackInfo(
@@ -105,7 +106,7 @@ class ModuleInterface:
             sample_rate = stream_data['sampling_rate'],
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = track_data['parental_warning'],
-            cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
+            cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
             codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
@@ -140,7 +141,7 @@ class ModuleInterface:
         }
 
         # album title fix to include version tag
-        album_name = album_data.get('title')
+        album_name = album_data.get('title').rstrip()
         album_name += f' ({album_data.get("version")})' if album_data.get("version") else ''
 
         return AlbumInfo(
@@ -151,7 +152,7 @@ class ModuleInterface:
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = album_data['parental_warning'],
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
-            cover_url = album_data['image']['large'].split('_')[0] + '_max.jpg',
+            cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
         )
@@ -227,7 +228,7 @@ class ModuleInterface:
                 year = int(i['release_date_original'].split('-')[0])
             else:
                 raise Exception('Query type is invalid')
-            name = i.get('name') if i.get('name') else i.get('title')
+            name = i.get('name', i['title'])
             name += f" ({i.get('version')})" if i.get('version') else ''
             item = SearchResult(
                 name = name,
