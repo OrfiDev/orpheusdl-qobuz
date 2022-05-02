@@ -52,18 +52,24 @@ class ModuleInterface:
             .decode('utf-8')
         ]
 
-        # Filter MainArtist from performers
+        # Filter MainArtist and FeaturedArtist from performers
         if track_data.get('performers'):
             performers = []
             for credit in track_data['performers'].split(' - '):
                 contributor_role = credit.split(', ')[1:]
                 contributor_name = credit.split(', ')[0]
+
                 if 'MainArtist' in contributor_role:
                     if contributor_name not in artists:
                         artists.append(contributor_name)
                     contributor_role.remove('MainArtist')
-                    if not contributor_role:
-                        continue
+                if 'FeaturedArtist' in contributor_role:
+                    if contributor_name not in artists:
+                        artists.append(contributor_name)
+                    contributor_role.remove('FeaturedArtist')
+
+                if not contributor_role:
+                    continue
                 performers.append(f"{contributor_name}, {', '.join(contributor_role)}")
             track_data['performers'] = ' - '.join(performers)
         artists[0] = main_artist['name']
