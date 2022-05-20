@@ -9,7 +9,7 @@ module_information = ModuleInformation(
     service_name = 'Qobuz',
     module_supported_modes = ModuleModes.download | ModuleModes.credits,
     global_settings = {'app_id': '', 'app_secret': '', 'quality_format': '{sample_rate}kHz {bit_depth}bit'},
-    session_settings = {'username': '', 'password': ''},
+    session_settings = {'username': '', 'password': '', 'password_hash': ''},
     session_storage_variables = ['token'],
     netlocation_constant = 'qobuz',
     test_url = 'https://open.qobuz.com/track/52151405'
@@ -34,8 +34,8 @@ class ModuleInterface:
         self.quality_tier = module_controller.orpheus_options.quality_tier
         self.quality_format = settings.get('quality_format')
 
-    def login(self, email, password):
-        token = self.session.login(email, password)
+    def login(self, email, password, password_hash):
+        token = self.session.login(email, password, password_hash)
         self.session.auth_token = token
         self.module_controller.temporary_settings_controller.set('token', token)
 

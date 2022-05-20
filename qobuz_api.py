@@ -35,10 +35,10 @@ class Qobuz:
 
         return r.json()
 
-    def login(self, email: str, password: str):
+    def login(self, email: str, password: str, password_hash: str):
         params = {
             'username': email,
-            'password': hash_string(password, 'MD5'),
+            'password': password_hash if password_hash else hash_string(password, 'MD5'),
             'extra': 'partner',
             'app_id': self.app_id
         }
