@@ -59,14 +59,11 @@ class ModuleInterface:
                 contributor_role = credit.split(', ')[1:]
                 contributor_name = credit.split(', ')[0]
 
-                if 'MainArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('MainArtist')
-                if 'FeaturedArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('FeaturedArtist')
+                for contributor in ['MainArtist', 'FeaturedArtist', 'Artist']:
+                    if contributor in contributor_role:
+                        if contributor_name not in artists:
+                            artists.append(contributor_name)
+                        contributor_role.remove(contributor)
 
                 if not contributor_role:
                     continue
