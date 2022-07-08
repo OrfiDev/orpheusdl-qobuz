@@ -234,7 +234,7 @@ class ModuleInterface:
                 year = int(i['release_date_original'].split('-')[0])
             else:
                 raise Exception('Query type is invalid')
-            name = i.get('name', i['title'])
+            name = i.get('name') or i.get('title')
             name += f" ({i.get('version')})" if i.get('version') else ''
             item = SearchResult(
                 name = name,
