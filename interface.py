@@ -91,7 +91,7 @@ class ModuleInterface:
         stream_data = self.session.get_file_url(track_id, quality_tier)
         # uncompressed PCM bitrate calculation, not quite accurate for FLACs due to the up to 60% size improvement
         bitrate = 320
-        if stream_data['format_id'] in {6, 7, 27}:
+        if stream_data.get('format_id') in {6, 7, 27}:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
@@ -114,9 +114,9 @@ class ModuleInterface:
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if stream_data.get('format_id') in {6, 7, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
-            download_extra_kwargs = {'url': stream_data['url']},
+            download_extra_kwargs = {'url': stream_data.get('url')},
             error=f'Track "{track_data["title"]}" is not streamable!' if not track_data['streamable'] else None
         )
 
