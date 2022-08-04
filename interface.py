@@ -25,6 +25,7 @@ class ModuleInterface:
 
         # 5 = 320 kbps MP3, 6 = 16-bit FLAC, 7 = 24-bit / =< 96kHz FLAC, 27 =< 192 kHz FLAC
         self.quality_parse = {
+            QualityEnum.MINIMUM: 5,
             QualityEnum.LOW: 5,
             QualityEnum.MEDIUM: 5,
             QualityEnum.HIGH: 5,
@@ -59,14 +60,11 @@ class ModuleInterface:
                 contributor_role = credit.split(', ')[1:]
                 contributor_name = credit.split(', ')[0]
 
-                if 'MainArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('MainArtist')
-                if 'FeaturedArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('FeaturedArtist')
+                for contributor in ['MainArtist', 'FeaturedArtist', 'Artist']:
+                    if contributor in contributor_role:
+                        if contributor_name not in artists:
+                            artists.append(contributor_name)
+                        contributor_role.remove(contributor)
 
                 if not contributor_role:
                     continue
@@ -84,6 +82,7 @@ class ModuleInterface:
             total_discs = album_data['media_count'],
             isrc = track_data.get('isrc'),
             upc = album_data.get('upc'),
+            label = album_data.get('label').get('name') if album_data.get('label') else None,
             copyright = track_data['copyright'],
             genres = [album_data['genre']['name']],
         )
