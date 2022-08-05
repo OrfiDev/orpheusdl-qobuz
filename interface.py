@@ -25,6 +25,7 @@ class ModuleInterface:
 
         # 5 = 320 kbps MP3, 6 = 16-bit FLAC, 7 = 24-bit / =< 96kHz FLAC, 27 =< 192 kHz FLAC
         self.quality_parse = {
+            QualityEnum.MINIMUM: 5,
             QualityEnum.LOW: 5,
             QualityEnum.MEDIUM: 5,
             QualityEnum.HIGH: 5,
@@ -59,14 +60,11 @@ class ModuleInterface:
                 contributor_role = credit.split(', ')[1:]
                 contributor_name = credit.split(', ')[0]
 
-                if 'MainArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('MainArtist')
-                if 'FeaturedArtist' in contributor_role:
-                    if contributor_name not in artists:
-                        artists.append(contributor_name)
-                    contributor_role.remove('FeaturedArtist')
+                for contributor in ['MainArtist', 'FeaturedArtist', 'Artist']:
+                    if contributor in contributor_role:
+                        if contributor_name not in artists:
+                            artists.append(contributor_name)
+                        contributor_role.remove(contributor)
 
                 if not contributor_role:
                     continue
@@ -84,6 +82,7 @@ class ModuleInterface:
             total_discs = album_data['media_count'],
             isrc = track_data.get('isrc'),
             upc = album_data.get('upc'),
+            label = album_data.get('label').get('name') if album_data.get('label') else None,
             copyright = track_data['copyright'],
             genres = [album_data['genre']['name']],
         )
@@ -91,7 +90,7 @@ class ModuleInterface:
         stream_data = self.session.get_file_url(track_id, quality_tier)
         # uncompressed PCM bitrate calculation, not quite accurate for FLACs due to the up to 60% size improvement
         bitrate = 320
-        if stream_data['format_id'] in {6, 7, 27}:
+        if stream_data.get('format_id') in {6, 7, 27}:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
@@ -114,9 +113,9 @@ class ModuleInterface:
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if stream_data.get('format_id') in {6, 7, 27} else CodecEnum.MP3,
             credits_extra_kwargs = {'data': {track_id: track_data}},
-            download_extra_kwargs = {'url': stream_data['url']},
+            download_extra_kwargs = {'url': stream_data.get('url')},
             error=f'Track "{track_data["title"]}" is not streamable!' if not track_data['streamable'] else None
         )
 
