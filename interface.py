@@ -1,5 +1,4 @@
-import unicodedata, re
-from html import unescape
+import unicodedata
 from datetime import datetime
 
 from utils.models import *
@@ -35,7 +34,6 @@ class ModuleInterface:
         }
         self.quality_tier = module_controller.orpheus_options.quality_tier
         self.quality_format = settings.get('quality_format')
-        self.parse_html = lambda description: re.sub(r'<.*?>', '', unescape(description))
 
     def login(self, email, password):
         token = self.session.login(email, password)
@@ -159,7 +157,7 @@ class ModuleInterface:
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = album_data['parental_warning'],
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
-            description = self.parse_html(album_data['description']) if album_data.get('description') else None,
+            description = album_data.get('description'),
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
