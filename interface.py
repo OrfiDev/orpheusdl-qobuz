@@ -177,6 +177,7 @@ class ModuleInterface:
             creator = playlist_data['owner']['name'],
             creator_id = playlist_data['owner']['id'],
             release_year = datetime.utcfromtimestamp(playlist_data['created_at']).strftime('%Y'),
+            description = playlist_data.get('description'),
             tracks = tracks,
             track_extra_kwargs = {'data': extra_kwargs}
         )
