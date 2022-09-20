@@ -83,7 +83,7 @@ class ModuleInterface:
             isrc = track_data.get('isrc'),
             upc = album_data.get('upc'),
             label = album_data.get('label').get('name') if album_data.get('label') else None,
-            copyright = track_data['copyright'],
+            copyright = album_data['copyright'],
             genres = [album_data['genre']['name']],
         )
 
@@ -94,7 +94,8 @@ class ModuleInterface:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
 
         # track and album title fix to include version tag
-        track_name = track_data.get('title').rstrip()
+        track_name = f"{track_data.get('work')} - " if track_data.get('work') else ""
+        track_name += track_data.get('title').rstrip()
         track_name += f' ({track_data.get("version")})' if track_data.get("version") else ''
 
         album_name = album_data.get('title').rstrip()
