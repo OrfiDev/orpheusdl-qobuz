@@ -159,6 +159,7 @@ class ModuleInterface:
             explicit = album_data['parental_warning'],
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
+            upc = album_data.get('upc'),
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
         )
