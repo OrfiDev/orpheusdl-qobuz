@@ -158,6 +158,7 @@ class ModuleInterface:
             release_year = int(album_data['release_date_original'].split('-')[0]),
             explicit = album_data['parental_warning'],
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
+            description = album_data.get('description'),
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             upc = album_data.get('upc'),
             booklet_url = booklet_url,
@@ -178,6 +179,7 @@ class ModuleInterface:
             creator = playlist_data['owner']['name'],
             creator_id = playlist_data['owner']['id'],
             release_year = datetime.utcfromtimestamp(playlist_data['created_at']).strftime('%Y'),
+            description = playlist_data.get('description'),
             tracks = tracks,
             track_extra_kwargs = {'data': extra_kwargs}
         )
@@ -235,7 +237,7 @@ class ModuleInterface:
                 year = int(i['release_date_original'].split('-')[0])
             else:
                 raise Exception('Query type is invalid')
-            name = i.get('name', i['title'])
+            name = i.get('name') or i.get('title')
             name += f" ({i.get('version')})" if i.get('version') else ''
             item = SearchResult(
                 name = name,
