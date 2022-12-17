@@ -160,6 +160,7 @@ class ModuleInterface:
             quality = self.quality_format.format(**quality_tags) if self.quality_format != '' else None,
             description = album_data.get('description'),
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
+            all_track_cover_jpg_url = album_data['image']['large'],
             upc = album_data.get('upc'),
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
