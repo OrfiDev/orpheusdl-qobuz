@@ -83,7 +83,7 @@ class ModuleInterface:
             isrc = track_data.get('isrc'),
             upc = album_data.get('upc'),
             label = album_data.get('label').get('name') if album_data.get('label') else None,
-            copyright = album_data['copyright'],
+            copyright = album_data.get('copyright'),
             genres = [album_data['genre']['name']],
         )
 
@@ -114,7 +114,8 @@ class ModuleInterface:
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if stream_data.get('format_id') in {6, 7, 27} else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
+            duration = track_data.get('duration'),
             credits_extra_kwargs = {'data': {track_id: track_data}},
             download_extra_kwargs = {'url': stream_data.get('url')},
             error=f'Track "{track_data["title"]}" is not streamable!' if not track_data['streamable'] else None
@@ -162,6 +163,7 @@ class ModuleInterface:
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             all_track_cover_jpg_url = album_data['image']['large'],
             upc = album_data.get('upc'),
+            duration = album_data.get('duration'),
             booklet_url = booklet_url,
             track_extra_kwargs = {'data': extra_kwargs}
         )
@@ -181,6 +183,7 @@ class ModuleInterface:
             creator_id = playlist_data['owner']['id'],
             release_year = datetime.utcfromtimestamp(playlist_data['created_at']).strftime('%Y'),
             description = playlist_data.get('description'),
+            duration = playlist_data.get('duration'),
             tracks = tracks,
             track_extra_kwargs = {'data': extra_kwargs}
         )
@@ -224,18 +227,22 @@ class ModuleInterface:
 
         items = []
         for i in results[query_type.name + 's']['items']:
+            duration = None
             if query_type is DownloadTypeEnum.artist:
                 artists = None
                 year = None
             elif query_type is DownloadTypeEnum.playlist:
                 artists = [i['owner']['name']]
                 year = datetime.utcfromtimestamp(i['created_at']).strftime('%Y')
+                duration = i['duration']
             elif query_type is DownloadTypeEnum.track:
                 artists = [i['performer']['name']]
                 year = int(i['album']['release_date_original'].split('-')[0])
+                duration = i['duration']
             elif query_type is DownloadTypeEnum.album:
                 artists = [i['artist']['name']]
                 year = int(i['release_date_original'].split('-')[0])
+                duration = i['duration']
             else:
                 raise Exception('Query type is invalid')
             name = i.get('name') or i.get('title')
@@ -247,6 +254,7 @@ class ModuleInterface:
                 result_id = str(i['id']),
                 explicit = bool(i.get('parental_warning')),
                 additional = [f'{i["maximum_sampling_rate"]}kHz/{i["maximum_bit_depth"]}bit'] if "maximum_sampling_rate" in i else None,
+                duration = duration,
                 extra_kwargs = {'data': {str(i['id']): i}} if query_type is DownloadTypeEnum.track else {}
             )
 
