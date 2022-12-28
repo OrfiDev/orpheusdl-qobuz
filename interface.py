@@ -14,7 +14,13 @@ module_information = ModuleInformation(
     session_settings = {'username': '', 'password': ''},
     session_storage_variables = ['token'],
     netlocation_constant = 'qobuz',
-    url_decoding = ManualEnum.manual,
+    url_constants={
+        'track': DownloadTypeEnum.track,
+        'album': DownloadTypeEnum.album,
+        'playlist': DownloadTypeEnum.playlist,
+        'artist': DownloadTypeEnum.artist,
+        'interpreter': DownloadTypeEnum.artist
+    },
     test_url = 'https://open.qobuz.com/track/52151405'
 )
 
@@ -43,22 +49,6 @@ class ModuleInterface:
         self.session.auth_token = token
         self.module_controller.temporary_settings_controller.set('token', token)
     
-    @staticmethod
-    def custom_url_parse(link):
-        url = urlparse(link)
-        media_type = re.findall(r'(track|album|artist|playlist|interpreter)', url.path)
-        if media_type:
-            type_ = media_type[0]
-            if type_ == 'interpreter':
-                type_ = 'artist'
-            return MediaIdentification(
-                media_type=DownloadTypeEnum[type_],
-                media_id=str(url.path.split('/')[-1])
-            )
-        else:
-            print(f'Invalid URL: {link}')
-            exit()
-
     def get_track_info(self, track_id, quality_tier: QualityEnum, codec_options: CodecOptions, data={}):
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
         album_data = track_data['album']
