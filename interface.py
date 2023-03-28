@@ -48,7 +48,7 @@ class ModuleInterface:
         token = self.session.login(email, password)
         self.session.auth_token = token
         self.module_controller.temporary_settings_controller.set('token', token)
-    
+
     def get_track_info(self, track_id, quality_tier: QualityEnum, codec_options: CodecOptions, data={}):
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
         album_data = track_data['album']
@@ -101,6 +101,8 @@ class ModuleInterface:
         bitrate = 320
         if stream_data.get('format_id') in {6, 7, 27}:
             bitrate = int((stream_data['sampling_rate'] * 1000 * stream_data['bit_depth'] * 2) // 1000)
+        elif not stream_data.get('format_id'):
+            bitrate = stream_data.get('format_id')
 
         # track and album title fix to include version tag
         track_name = f"{track_data.get('work')} - " if track_data.get('work') else ""
@@ -123,7 +125,7 @@ class ModuleInterface:
             explicit = track_data['parental_warning'],
             cover_url = album_data['image']['large'].split('_')[0] + '_org.jpg',
             tags = tags,
-            codec = CodecEnum.FLAC if stream_data['format_id'] in {6, 7, 27} else CodecEnum.MP3,
+            codec = CodecEnum.FLAC if stream_data.get('format_id') in {6, 7, 27} else CodecEnum.NONE if not stream_data.get('format_id') else CodecEnum.MP3,
             duration = track_data.get('duration'),
             credits_extra_kwargs = {'data': {track_id: track_data}},
             download_extra_kwargs = {'url': stream_data.get('url')},
