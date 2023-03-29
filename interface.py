@@ -48,7 +48,7 @@ class ModuleInterface:
         token = self.session.login(email, password)
         self.session.auth_token = token
         self.module_controller.temporary_settings_controller.set('token', token)
-    
+
     def get_track_info(self, track_id, quality_tier: QualityEnum, codec_options: CodecOptions, data={}):
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
         album_data = track_data['album']
@@ -94,6 +94,8 @@ class ModuleInterface:
             label = album_data.get('label').get('name') if album_data.get('label') else None,
             copyright = album_data.get('copyright'),
             genres = [album_data['genre']['name']],
+            replay_gain = track_data.get('audio_info').get('replaygain_track_gain') if track_data.get('audio_info') else None,
+            replay_peak = track_data.get('audio_info').get('replaygain_track_peak') if track_data.get('audio_info') else None
         )
 
         stream_data = self.session.get_file_url(track_id, quality_tier)
