@@ -94,6 +94,8 @@ class ModuleInterface:
             label = album_data.get('label').get('name') if album_data.get('label') else None,
             copyright = album_data.get('copyright'),
             genres = [album_data['genre']['name']],
+            replay_gain = track_data.get('audio_info').get('replaygain_track_gain') if track_data.get('audio_info') else None,
+            replay_peak = track_data.get('audio_info').get('replaygain_track_peak') if track_data.get('audio_info') else None
         )
 
         stream_data = self.session.get_file_url(track_id, quality_tier)
