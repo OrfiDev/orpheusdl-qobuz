@@ -124,3 +124,12 @@ class Qobuz:
             'limit': '1000',
             'offset': '0'
         })
+
+    def get_label(self, label_id: str):
+        return self._get('label/get', params={
+            'label_id': label_id,
+            'app_id': self.app_id,
+            'extra': 'albums,focusAll', # accepted values are albums, focus, focusAll
+            'limit': '1000',
+            'offset': '0'
+        })

@@ -19,7 +19,8 @@ module_information = ModuleInformation(
         'album': DownloadTypeEnum.album,
         'playlist': DownloadTypeEnum.playlist,
         'artist': DownloadTypeEnum.artist,
-        'interpreter': DownloadTypeEnum.artist
+        'interpreter': DownloadTypeEnum.artist,
+        'label': DownloadTypeEnum.label
     },
     test_url = 'https://open.qobuz.com/track/52151405'
 )
@@ -208,6 +209,17 @@ class ModuleInterface:
             albums = albums
         )
 
+    def get_label_info(self, label_id):
+        label_data = self.session.get_label(label_id)
+        albums = [str(album['id']) for album in label_data['albums']['items']]
+        names = [str(album['artist']['name']) for album in label_data['albums']['items']]
+
+        return LabelInfo(
+            label_name = label_data['name'],
+            names = names,
+            albums = albums
+        )
+
     def get_track_credits(self, track_id, data=None):
         track_data = data[track_id] if track_id in data else self.session.get_track(track_id)
         track_contributors = track_data.get('performers')
@@ -240,6 +252,9 @@ class ModuleInterface:
         for i in results[query_type.name + 's']['items']:
             duration = None
             if query_type is DownloadTypeEnum.artist:
+                artists = None
+                year = None
+            elif query_type is DownloadTypeEnum.label: #TODO test search
                 artists = None
                 year = None
             elif query_type is DownloadTypeEnum.playlist:
